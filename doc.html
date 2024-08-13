@@ -7,12 +7,22 @@
   <style>
     body {
       margin: 0;
-      overflow: hidden;
+      overflow: hidden; /* To prevent scrolling */
       font-family: Arial, sans-serif;
     }
     #canvas {
-      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
       background: black;
+    }
+    #controls {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      z-index: 10; /* Ensure buttons are on top */
+      background: rgba(0, 0, 0, 0.8); /* Slight background for visibility */
+      padding: 10px;
     }
     button {
       margin: 5px;
@@ -31,40 +41,15 @@
 </head>
 <body>
   <canvas id="canvas"></canvas>
-  <button id="showSessionsBtn">Show Saved Sessions</button>
-  <button id="startBtn">Start Simulation</button>
-  <button id="pauseBtn">Pause Simulation</button>
-  <button id="resetBtn">Reset Simulation</button>
-  <ul id="sessionsList"></ul>
+  <div id="controls">
+    <button id="showSessionsBtn">Show Saved Sessions</button>
+    <button id="startBtn">Start Simulation</button>
+    <button id="pauseBtn">Pause Simulation</button>
+    <button id="resetBtn">Reset Simulation</button>
+    <ul id="sessionsList"></ul>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="index.js"></script>
-  <script>
-    const startButton = document.getElementById('startBtn');
-    const pauseButton = document.getElementById('pauseBtn');
-    const resetButton = document.getElementById('resetBtn');
-
-    let isPaused = false;
-
-    startButton.addEventListener('click', () => {
-      if (isPaused) {
-        isPaused = false;
-        startSimulation();
-      } else {
-        startSimulation();
-      }
-    });
-
-    pauseButton.addEventListener('click', () => {
-      stopSimulation();
-      isPaused = true;
-    });
-
-    resetButton.addEventListener('click', () => {
-      stopSimulation();
-      resetPopulation();
-      startSimulation();
-    });
-  </script>
 </body>
 </html>
 

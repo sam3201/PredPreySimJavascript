@@ -208,115 +208,95 @@ class Agent {
   update() {
     const inputs = this.inputs();
     const output = this.predict(inputs);
-    this.vx += output[0] * 0.1;
-    this.vy += output[1] * 0.1;
+    this.vx += output[0] * 2 - 1;
+    this.vy += output[1] * 2 - 1;
     this.move();
-    this.checkCollisions(); 
-    this.draw();
+    this.checkCollisions();
     this.timeAlive++;
-    this.health--;
-
-    if (this.health <= 0) this.die();
-    if (this.timeAlive > maxTimeAlive) maxTimeAlive = this.timeAlive;
+    if (this.type === "prey" && this.health <= 0) {
+      this.die();
+    }
+    if (this.type === "predator" && this.health <= 0) {
+      this.die();
+    }
   }
 }
 
-class Food {
-  constructor(x, y) {
-    this.x = x || random(width);
-    this.y = y || random(height);
-    this.size = 10;
-    this.color = "yellow";
-  }
-
-  draw() {
-    ctx.fillStyle = this.color;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  update() {
-    this.draw();
-  }
-}
-
-function createAgents() {
-  for (let i = 0; i < numPredators; i++) { 
+function init() {
+  predators = [];
+  prey = [];
+  food = [];
+  deadAgents = [];
+  for (let i = 0; i < numPredators; i++) {
     predators.push(new Agent("predator"));
   }
-
-  for (let i = 0; i < numPrey; i++) { 
+  for (let i = 0; i < numPrey; i++) {
     prey.push(new Agent("prey"));
   }
-}
-
-function createFood() {
-  for (let i = 0; i < numFood; i++) { 
-    food.push(new Food());
+  for (let i = 0; i < numFood; i++) {
+    food.push({ x: random(width), y: random(height) });
   }
-}
-
-function update() {
-  ctx.fillStyle = "black";
-  ctx.fillRect(0, 0, width, height);
-  prey.forEach(agent => agent.update());
-  predators.forEach(agent => agent.update());
-  food.forEach(f => f.update());
-
-  displayInfo();
-
-  if (isRunning) requestAnimationFrame(update);
 }
 
 function resetPopulation() {
-  // Repopulate with best agents
-  if (bestPrey.length > 0) {
-    for (let i = 0; i < numPrey; i++) {
-      const parent = bestPrey[Math.floor(Math.random() * bestPrey.length)];
-      prey.push(new Agent("prey", null, null, parent.createModel()));
-      prey[prey.length - 1].model.setWeights(parent.model.getWeights());
-    }
-  }
-
-  if (bestPredators.length > 0) {
-    for (let i = 0; i < numPredators; i++) {
-      const parent = bestPredators[Math.floor(Math.random() * bestPredators.length)];
-      predators.push(new Agent("predator", null, null, parent.createModel()));
-      predators[predators.length - 1].model.setWeights(parent.model.getWeights());
-    }
-  }
-
-  // Clear food and reset its number
-  food = [];
-  createFood();
-
-  generation++;
+  init();
   maxTimeAlive = 0;
+  generation++;
+  bestPredators = [];
+  bestPrey = [];
 }
 
-function displayInfo() {
-  ctx.fillStyle = "white";
-  ctx.font = "20px Arial";
-  ctx.fillText(`Generation: ${generation}`, 10, 10);
-  ctx.fillText(`Prey Count: ${prey.length}`, 10, 40);
-  ctx.fillText(`Predator Count: ${predators.length}`, 10, 60);
+function update() {
+  predators.forEach(predator => predator.update());
+  prey.forEach(p => p.update());
 }
 
-function startSimulation() {
-  createAgents();
-  createFood();
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  food.forEach(f => {
+    ctx.fillStyle = "yellow";
+    ctx.beginPath();
+    ctx.arc(f.x, f.y, 5, 0, 2 * Math.PI);
+    ctx.closePath();
+    ctx.fill();
+  });
+  predators.forEach(predator => predator.draw());
+  prey.forEach(p => p.draw());
+}
+
+function gameLoop() {
+  if (isRunning) {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+  }
+}
+
+document.getElementById("showSessionsBtn").addEventListener("click", () => {
+  const sessionsList = document.getElementById("sessionsList");
+  sessionsList.innerHTML = '';
+  const savedSessions = JSON.parse(localStorage.getItem("savedSessions")) || [];
+  savedSessions.forEach((session, index) => {
+    const li = document.createElement("li");
+    li.textContent = `Session ${index + 1}: Generation ${session.generation}, Best Fitness ${session.bestFitness}`;
+    sessionsList.appendChild(li);
+  });
+});
+
+document.getElementById("startBtn").addEventListener("click", () => {
   if (!isRunning) {
     isRunning = true;
-    requestAnimationFrame(update);
+    gameLoop();
   }
-}
+});
 
-function stopSimulation() {
+document.getElementById("pauseBtn").addEventListener("click", () => {
   isRunning = false;
-}
+});
 
-document.getElementById("start").addEventListener("click", startSimulation);
-document.getElementById("stop").addEventListener("click", stopSimulation);
+document.getElementById("resetBtn").addEventListener("click", () => {
+  resetPopulation();
+});
+
+init();
 
