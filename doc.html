@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agents Simulation</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+    #canvas {
+      display: block;
+      background: black;
+    }
+    button {
+      margin: 5px;
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #sessionsList {
+      list-style: none;
+      padding: 0;
+    }
+    #sessionsList li {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <button id="showSessionsBtn">Show Saved Sessions</button>
+  <button id="startBtn">Start Simulation</button>
+  <button id="pauseBtn">Pause Simulation</button>
+  <button id="resetBtn">Reset Simulation</button>
+  <ul id="sessionsList"></ul>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script src="index.js"></script>
+  <script>
+    const startButton = document.getElementById('startBtn');
+    const pauseButton = document.getElementById('pauseBtn');
+    const resetButton = document.getElementById('resetBtn');
+
+    let isPaused = false;
+
+    startButton.addEventListener('click', () => {
+      if (isPaused) {
+        isPaused = false;
+        startSimulation();
+      } else {
+        startSimulation();
+      }
+    });
+
+    pauseButton.addEventListener('click', () => {
+      stopSimulation();
+      isPaused = true;
+    });
+
+    resetButton.addEventListener('click', () => {
+      stopSimulation();
+      resetPopulation();
+      startSimulation();
+    });
+  </script>
+</body>
+</html>
+
